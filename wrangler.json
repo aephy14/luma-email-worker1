@@ -1,0 +1,16 @@
+{
+	"compatibility_date": "2025-10-08",
+	"main": "src/index.ts",
+	"name": "luma-email-worker1",
+	"upload_source_maps": true,
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_id": "efcf735c-f5ce-4138-afed-ea7ccdfe5939",
+			"database_name": "luma_dashboard"
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}
