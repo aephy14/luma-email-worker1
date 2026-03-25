@@ -3,6 +3,12 @@
 	"main": "src/index.ts",
 	"name": "luma-email-worker1",
 	"upload_source_maps": true,
+	"r2_buckets": [
+		{
+			"binding": "R2",
+			"bucket_name": "luma-invoices"
+		}
+	],
 	"d1_databases": [
 		{
 			"binding": "DB",
