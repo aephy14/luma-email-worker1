@@ -9,7 +9,7 @@
 D1 is Cloudflare's native serverless SQL database ([docs](https://developers.cloudflare.com/d1/)). This project demonstrates using a Worker with a D1 binding to execute a SQL statement. A simple frontend displays the result of this query:
 
 ```SQL
-SELECT * FROM comments LIMIT 3;
+SELECT √ FROM comments LIMIT 3;
 ```
 
 The D1 database is initialized with a `comments` table and this data:
@@ -58,4 +58,4 @@ A live public deployment of this template is available at [https://d1-template.t
    npx wrangler deploy
    ```
 
-Don't forget to wipe
+Don't forget to wipe and walk the dog***
