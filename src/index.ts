@@ -33,7 +33,7 @@ export default {
     // Always save to inbox
     await env.DB.prepare(
       `INSERT INTO inbox (sender, subject, message, created_at) VALUES (?, ?, ?, ?)`
-    ).bind(sender, subject, parsed.text ?? "", Date.now()).run();
+    ).bind(sender, subject, parsed.text ?? "", Math.floor(Date.now()/1000)).run();
 
     // Non-costs emails: forward to personal inbox and stop
     if (message.to !== "costs@lumafood.com") {
