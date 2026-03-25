@@ -33,7 +33,7 @@ export default {
     // Always save to inbox
     await env.DB.prepare(
       `INSERT INTO inbox (sender, subject, message, created_at) VALUES (?, ?, ?, ?)`
-    ).bind(sender, subject, parsed.text ?? "", Math.floor(Date.now()/1000)).run();
+    ).bind(sender, subject, parsed.text ?? "", Math.floor(Date.now() / 1000)).run();
 
     // Non-costs emails: forward to personal inbox and stop
     if (message.to !== "costs@lumafood.com") {
@@ -46,7 +46,7 @@ export default {
 
     await env.DB.prepare(
       `INSERT OR IGNORE INTO sheet (id, columns_json)
-       VALUES (1, '["Date","Description","Amount (NZD)","GST","Notes"]')`
+       VALUES (1, '["Date","Account","Description","COSTS","LOANS","REVENUE","GST RECEIVABLE","GST PAYABLE","I"]')`
     ).run();
 
     const { results: orderRes } = await env.DB.prepare(
@@ -54,7 +54,7 @@ export default {
     ).all();
     const rowOrder = (orderRes[0] as any).next ?? 1;
 
-    const rowData = JSON.stringify([date, subject, "", "", "📧 emailed invoice"]);
+    const rowData = JSON.stringify([date, "", subject, "", "", "", "", "", "📧 emailed invoice"]);
     const insertResult = await env.DB.prepare(
       `INSERT INTO sheet_rows (sheet_id, row_order, data_json) VALUES (1, ?, ?)`
     ).bind(rowOrder, rowData).run();
