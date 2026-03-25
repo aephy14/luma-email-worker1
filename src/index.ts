@@ -3,11 +3,38 @@ import PostalMime from "postal-mime";
 const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 
 export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/api/inbox" && request.method === "GET") {
+      const auth = request.headers.get("authorization") ?? "";
+      if (!env.INBOX_TOKEN || auth !== `Bearer ${env.INBOX_TOKEN}`) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+
+      const limit = Math.max(1, Math.min(100, Number(url.searchParams.get("limit") || 10)));
+      const { results } = await env.DB.prepare(
+        `SELECT id, sender, subject, body, created_at FROM inbox ORDER BY created_at DESC LIMIT ?`
+      ).bind(limit).all();
+
+      return new Response(JSON.stringify(results ?? []), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    return new Response("Not found", { status: 404 });
+  },
+
   async email(message: ForwardableEmailMessage, env: Env) {
     const parsed = await PostalMime.parse(await new Response(message.raw).arrayBuffer());
 
     const date = new Date().toISOString().slice(0, 10);
     const subject = (parsed.subject ?? "Invoice").trim();
+    const sender = message.from;
+
+    await env.DB.prepare(
+      `INSERT INTO inbox (sender, subject, body, created_at) VALUES (?, ?, ?, ?)`
+    ).bind(sender, subject, parsed.text ?? "", Date.now()).run();
 
     await env.DB.prepare(
       `INSERT OR IGNORE INTO sheet (id, columns_json)
