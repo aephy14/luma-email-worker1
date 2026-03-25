@@ -14,7 +14,7 @@ export default {
 
       const limit = Math.max(1, Math.min(100, Number(url.searchParams.get("limit") || 10)));
       const { results } = await env.DB.prepare(
-        `SELECT id, sender, subject, message AS body, created_at FROM inbox ORDER BY created_at DESC LIMIT ?`
+        `SELECT id, sender, subject, body, created_at FROM inbox ORDER BY created_at DESC LIMIT ?`
       ).bind(limit).all();
 
       return new Response(JSON.stringify(results ?? []), {
@@ -32,7 +32,7 @@ export default {
 
     // Always save to inbox
     await env.DB.prepare(
-      `INSERT INTO inbox (sender, subject, message, created_at) VALUES (?, ?, ?, ?)`
+      `INSERT INTO inbox (sender, subject, body, created_at) VALUES (?, ?, ?, ?)`
     ).bind(sender, subject, parsed.text ?? "", Math.floor(Date.now() / 1000)).run();
 
     // Non-costs emails: forward to personal inbox and stop
@@ -61,13 +61,18 @@ export default {
     const rowId = insertResult.meta.last_row_id as number;
 
     for (const att of parsed.attachments ?? []) {
-      if (!ALLOWED_TYPES.includes(att.mimeType)) continue;
+        const ext = (att.filename ?? "").split(".").pop()?.toLowerCase() ?? "";
+      const allowed = ALLOWED_TYPES.includes(att.mimeType) || ["pdf","png","jpg","jpeg"].includes(ext);
+      if (!allowed) continue;
+      const contentType = ALLOWED_TYPES.includes(att.mimeType) ? att.mimeType
+        : ext === "pdf" ? "application/pdf"
+        : ext === "png" ? "image/png" : "image/jpeg";
 
       const safeName = (att.filename ?? "attachment").replace(/[^a-zA-Z0-9._-]/g, "_");
       const r2Key = `invoices/${rowId}/${Date.now()}_${safeName}`;
 
       await env.R2.put(r2Key, att.content, {
-        httpMetadata: { contentType: att.mimeType },
+        httpMetadata: { contentType },
       });
 
       await env.DB.prepare(
