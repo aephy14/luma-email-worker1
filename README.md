@@ -58,4 +58,4 @@ A live public deployment of this template is available at [https://d1-template.t
    npx wrangler deploy
    ```
 
-Don't forget to wipe and walk the dog***
+Don't forget to wipe and walk the dog and clean behind your ears
