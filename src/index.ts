@@ -14,7 +14,7 @@ export default {
 
       const limit = Math.max(1, Math.min(100, Number(url.searchParams.get("limit") || 10)));
       const { results } = await env.DB.prepare(
-        `SELECT id, sender, subject, body, created_at FROM inbox ORDER BY created_at DESC LIMIT ?`
+        `SELECT id, sender, subject, message AS body, created_at FROM inbox ORDER BY created_at DESC LIMIT ?`
       ).bind(limit).all();
 
       return new Response(JSON.stringify(results ?? []), {
@@ -32,7 +32,7 @@ export default {
 
     // Always save to inbox
     await env.DB.prepare(
-      `INSERT INTO inbox (sender, subject, body, created_at) VALUES (?, ?, ?, ?)`
+      `INSERT INTO inbox (sender, subject, message, created_at) VALUES (?, ?, ?, ?)`
     ).bind(sender, subject, parsed.text ?? "", Date.now()).run();
 
     // Non-costs emails: forward to personal inbox and stop
