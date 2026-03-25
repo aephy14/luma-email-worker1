@@ -31,9 +31,13 @@ export default {
       `INSERT INTO inbox (sender, subject, body, created_at) VALUES (?, ?, ?, ?)`
     ).bind(sender, subject, parsed.text ?? "", Date.now()).run();
 
-    // Only create ledger entry for costs@lumafood.com
-    if (message.to !== "costs@lumafood.com") return;
+    // Forward non-costs emails to personal inbox and stop
+    if (message.to !== "costs@lumafood.com") {
+      await message.forward("alejbeck@gmail.com");
+      return;
+    }
 
+    // Only costs@lumafood.com reaches here — create ledger entry
     const date = new Date().toISOString().slice(0, 10);
 
     await env.DB.prepare(
